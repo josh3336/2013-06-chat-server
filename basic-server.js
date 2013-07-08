@@ -1,3 +1,5 @@
+var rh = require('./request-handler.js');
+
 /* Import node's http module: */
 var http = require("http");
 
@@ -32,19 +34,8 @@ var requestListener = function (request, response) {
    * anything back to the client until you do. The string you pass to
    * response.end() will be the body of the response - i.e. what shows
    * up in the browser.*/
-  response.end("Hello, World!");
-};
 
-/* These headers will allow Cross-Origin Resource Sharing.
- * This CRUCIAL code allows this server to talk to websites that
- * are on different domains. (Your chat client is running from a url
- * like file://your/chat/client/index.html, which is considered a
- * different domain.) */
-var defaultCorsHeaders = {
-  "access-control-allow-origin": "*",
-  "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "access-control-allow-headers": "content-type, accept",
-  "access-control-max-age": 10 // Seconds.
+  response.end("Your are now at " + display);
 };
 
 /* Every server needs to listen on a port with a unique number. The
@@ -57,13 +48,15 @@ var port = 8080;
 /* For now, since you're running this server on your local machine,
  * we'll have it listen on the IP address 127.0.0.1, which is a
  * special address that always refers to localhost. */
-var ip = "127.0.0.1";
+var ip = '127.0.0.1';
 
 /* Use node's http module to create a server and start it listening on
  * the given port and IP. */
-var server = http.createServer(requestListener);
+var server = http.createServer(rh.rh);
 console.log("Listening on http://" + ip + ":" + port);
 server.listen(port, ip);
+
+debugger;
 
 /* To start this server, run:
      node basic-server.js
