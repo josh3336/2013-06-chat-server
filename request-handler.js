@@ -51,15 +51,37 @@ var handleRequest = function(request, response) {
       response.end();
     }
 
-    var queryData = url.parse(request.url, true).query;
     if(request.method === 'GET') {
-      console.log('Getted');
-      console.log('Storage: ' + storage);
-    }
+      var queryData = url.parse(request.url, true).query;
+      var lastMsgTime = '2013-07-09T03:55:44.127Z';
+      lastMsgTime = new Date(JSON.parse(queryData.time));
 
+      if(typeof lastMsgTime === 'undefined') {
+        console.log('bad time.');
+        lastMsgTime = '2013-07-09T03:55:44.127Z';
+      }
+
+      lastMsgTime = lastMsgTime.getTime();
+
+      console.log(lastMsgTime);
+
+      var messages = storage[_roomname];
+      var resultArray = messages.slice(0);
+
+      console.log('msgs:',messages);
+      console.log('ra:',resultArray);
+
+      // for(var i=messages.length-1; i>-1; i--) {
+      //   if(messages[i].createdAt.getTime()<=lastMsgTime) {
+      //     resultArray = messages.slice(i+1);
+      //     break;
+      //   }
+      // }
+      // console.log(resultArray);
+    }
     statusCode = 200;
     response.writeHead(statusCode, headers);
-    response.end(JSON.stringify(storage[_roomname]));
+    response.end(JSON.stringify('fuck'));
   }
 };
 
