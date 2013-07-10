@@ -7,79 +7,76 @@ var storage = {};
 var handleRequest = function(request, response) {
   console.log("Serving request type " + request.method + " for url " + request.url);
 
-  var tmp = (request.url).split('/');
-  var _roomname = tmp[tmp.length-2];
+  var path = url.parse(request.url).path.split("/");
 
-  switch(request.method){
-    case 'GET':
+  var _roomname = path[path.length-1] || path[path.length-2];
 
-      var queryData = url.parse(request.url, true).query;
+  if(path[1]!=='classes') {
+    response.writeHead(404);
+    response.end('');
+  } else {
+    switch(request.method){
+      case 'GET':
 
-      if(queryData && (typeof queryData.time === 'undefined')) {
-        lastMsgTime = new Date();
-      } else {
-        lastMsgTime = new Date(JSON.parse(queryData.time));
-      }
+        // var queryData = url.parse(request.url, true).query;
 
-      lastMsgTime = lastMsgTime.getTime();
+        // if(queryData && (typeof queryData.time === 'undefined')) {
+        //   lastMsgTime = new Date();
+        // } else {
+        //   lastMsgTime = new Date(JSON.parse(queryData.time));
+        // }
 
-      console.log(lastMsgTime);
+        // lastMsgTime = lastMsgTime.getTime();
 
-      var messages = storage[_roomname];
-      var resultArray = messages.slice(0);
+        // console.log(lastMsgTime);
 
-      console.log('msgs:',messages);
-      console.log('ra:',resultArray);
 
-      // for(var i=messages.length-1; i>-1; i--) {
-      //   if(messages[i].createdAt.getTime()<=lastMsgTime) {
-      //     resultArray = messages.slice(i+1);
-      //     break;
-      //   }
-      // }
-      // console.log(resultArray);
+        // for(var i=messages.length-1; i>-1; i--) {
+        //   if(messages[i].createdAt.getTime()<=lastMsgTime) {
+        //     resultArray = messages.slice(i+1);
+        //     break;
+        //   }
+        // }
+        // console.log(resultArray);
 
-      response.writeHead(200, defaultCorsHeaders);
-      response.end(JSON.stringify('GETted'));
-      break;
-    case 'POST':
+        var messages = storage[_roomname] || [];
 
-      console.log('Posted.');
+        response.writeHead(200, defaultCorsHeaders);
+        response.end(JSON.stringify(messages));
+        break;
+      case 'POST':
+        var body = '';
 
-      var body = '';
-
-      request.on('data', function (data) {
-        body += data;
-        if (body.length > 1e6) {
-          request.connection.destroy();
-        }
-      });
-
-      request.on('end', function () {
-          body = JSON.parse(body);
-          body['createdAt'] = new Date();
-
-          if(storage.hasOwnProperty(_roomname)) {
-            storage[_roomname].push(body);
-          } else {
-            storage[_roomname] = [];
-            storage[_roomname].push(body);
+        request.on('data', function (chunk) {
+          body += chunk;
+          if (body.length > 1e6) {
+            request.connection.destroy();
           }
+        });
 
-          console.log('st: ' + storage[_roomname]);
-          console.log('len: ' + storage[_roomname].length);
-      });
+        request.on('end', function () {
+            body = JSON.parse(body);
+            body['createdAt'] = new Date();
 
-      response.writeHead(201, defaultCorsHeaders);
-      response.end('Posted.');
-      break;
+            if(storage.hasOwnProperty(_roomname)) {
+              storage[_roomname].push(body);
+            } else {
+              storage[_roomname] = [];
+              storage[_roomname].push(body);
+            }
+        });
 
-    default:
-      response.writeHead(406, defaultCorsHeaders);
-      response.end('Invalid request.');
-      break;
+        response.writeHead(201, defaultCorsHeaders);
+        response.end('');
+        break;
+
+      default:
+        response.writeHead(406, defaultCorsHeaders);
+        response.end('Invalid request.');
+        break;
+    }
   }
 };
 
 
-exports.rh = handleRequest;
+exports.handleRequest = handleRequest;
